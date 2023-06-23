@@ -7,6 +7,11 @@ import gymnasium as gym
 import gym_game
 
 
+screen_width = 1500
+screen_height = 800
+pen_start_point = [120, 590]
+goal_point = [1260, 600]
+
 def find_closest_key(key):   
     index_1 = key[1]
     index_2 = key[2]
@@ -120,7 +125,9 @@ if __name__ == "__main__":
     # Create the Q-table
     q_table = {}
 
-    q_states = generate_q_states([0, 0, 0], [1, 800, 1500], 5)
+    q_states = generate_q_states([0, 590 - 800, (goal_point[0] - screen_width)], [1, pen_start_point[1], goal_point[0] ], 5)
+
+
 
     # Initialize the Q-values for each state-action pair to 0
     for state in q_states:

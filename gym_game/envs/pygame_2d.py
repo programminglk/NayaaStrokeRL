@@ -5,7 +5,6 @@ import random
 
 screen_width = 1500
 screen_height = 800
-
 pen_start_point = [120, 590]
 goal_point = [1260, 600]
 
@@ -19,6 +18,7 @@ class Pen:
         self.pen_rect = self.surface.get_rect()
         self.pos = pos
         self.prev_position = pen_start_point
+        self.pen_start_point = pos
 
         self.distance_to_left_boundary = 10
         self.distance_to_right_boundary = 10
@@ -27,7 +27,7 @@ class Pen:
 
         self.action = 0
         self.distance = 0
-        self.y_distance_from_start = int(-(self.pos[1] - pen_start_point[1]))
+        self.y_distance_from_start = pen_start_point[1] - self.pos[1]
         self.x_distance_to_goal = int(goal_point[0] - self.pos[0])
         self.out_or_hitting_snake_boundary = False
 
@@ -88,7 +88,7 @@ class Pen:
 
 
     def update(self):
-        self.distance = random.randint(20, 30)
+        self.distance = random.randint(30, 40)
         print("distance to draw: ", self.distance, " in direction: ", self.action, " from pos: ", self.pos)
 
         if not self.is_going_to_go_out_of_boundary(self.pos, self.distance):
@@ -118,6 +118,8 @@ class Pen:
                     self.pos[1] += self.distance
                 if self.action == 3: # move down
                     self.pos[1] -= self.distance
+                
+                self.distance = 0
                 print("--------------------- hit the boundary or drew outside the boundary. So change the position to previous position. ---------------------")
                 # self.is_alive = False
                 return
@@ -132,7 +134,7 @@ class PyGame2D:
         self.clock = pygame.time.Clock()
         self.font = pygame.font.SysFont("Arial", 30)
 
-        self.pen = Pen('pen.png', 'map_cobra_2.png', pen_start_point)
+        self.pen = Pen('pen.png', 'map_cobra_1.png', [120,590])
         print("=====>>>>> pen pos: ", self.pen.pos)
 
         self.game_speed = 30
@@ -162,29 +164,28 @@ class PyGame2D:
         reward = 0
 
         if not self.pen.is_alive:
-            reward = -10000 + self.pen.y_distance_from_start
+            reward = -100 + self.pen.y_distance_from_start
         
         if self.pen.is_alive:
-            print("pen is alive :::")
+            if self.pen.distance == 0:
+                print("::: penalty because distance is 0 which means moved out or hit the snake boundry :::")
+                reward += -50
+            else:
+                print("pen is alive :::")
+                print("::: y_distance_from_start: ", self.pen.y_distance_from_start, "<------------------", 
+                      "\n::: x_distance_to_goal: ", self.pen.x_distance_to_goal)
 
-            reward += self.pen.y_distance_from_start
-            reward += 10000 / self.pen.x_distance_to_goal  # to make when decreesing x_distance_to_goal, the reward will increase
+                reward += self.pen.y_distance_from_start
+                reward += 10000 / self.pen.x_distance_to_goal  # to make when decreesing x_distance_to_goal, the reward will increase
 
-            if(self.pen.distance_to_left_boundary > 350 or self.pen.distance_to_right_boundary > 350 or 
-               self.pen.distance_to_up_boundary > 350 or self.pen.distance_to_down_boundary > 350):
-                reward += -10000
+                print(":::: reward from pen y distance form start: ", self.pen.y_distance_from_start)
+                print(":::: reward from pen x distance to goal: ", 25000 / self.pen.x_distance_to_goal)
 
-            if((self.pen.pos[1] < 770 and self.pen.pos[1] > 40 and self.pen.pos[0] < 1470 and self.pen.pos[0] > 40) and
-                (self.pen.map.get_at((self.pen.pos[0], self.pen.pos[1])) != (255, 255, 255, 255)) and 
-               (self.pen.map.get_at((self.pen.pos[0], self.pen.pos[1])) != (255, 0, 0, 255))):
-                reward += -10000
-
-            if self.pen.y_distance_from_start < 0:
-                reward += -9000
-
-            if self.pen.x_distance_to_goal < 20:
-                reward = 10000
-
+                if self.pen.x_distance_to_goal < 20:
+                    reward += 100
+                
+                if self.pen.x_distance_to_goal < 5:
+                    reward += 100
         return reward
 
     def is_done(self):
@@ -194,12 +195,13 @@ class PyGame2D:
 
     def observe(self):
         # return state
-        within_snake_body = 0
-        if(self.pen.distance_to_left_boundary > 350 or self.pen.distance_to_right_boundary > 350 or 
-               self.pen.distance_to_up_boundary > 350 or self.pen.distance_to_down_boundary > 350):
-            within_snake_body = 1
-
-        ret = [int(within_snake_body), int(self.pen.y_distance_from_start), int(self.pen.x_distance_to_goal)]
+        in_or_out = 0
+        if self.pen.out_or_hitting_snake_boundary:
+            in_or_out = 1
+        else:
+            in_or_out = 0
+            
+        ret = [in_or_out, int(self.pen.y_distance_from_start), int(self.pen.x_distance_to_goal)]
 
         # convert to numpy array
         ret = np.array(ret)

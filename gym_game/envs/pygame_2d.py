@@ -12,6 +12,7 @@ draw_points = []
 
 class Pen:
     def __init__(self, pen_file, map_file, pos):
+        print(":::---------------- Initializing Pen ---------------- ::::")
         self.surface = pygame.image.load(pen_file)
         self.map = pygame.image.load(map_file)
         # self.surface = pygame.transform.scale(self.surface, (100, 100))
@@ -71,8 +72,9 @@ class Pen:
                     self.out_or_hitting_snake_boundary = False
                     return False
                 else:
-                    print("was on red strokes, but seems outside of snake..")
+                    print("was on red strokes, but seems outside of snake.. so Im killing the pen as a penalty")
                     self.out_or_hitting_snake_boundary = True
+                    self.is_alive = False
                     return True
         else:
             self.out_or_hitting_snake_boundary = False
@@ -80,7 +82,8 @@ class Pen:
         
     def is_going_to_go_out_of_boundary(self, p, distance):
         if(p[0] - distance < 0 or p[0] + distance > 1500 or p[1] - distance < 0 or p[1] + distance > 800):
-            print("This change is going to go out of boundary, so don't do this change.")
+            print(":::: This change is going to go out of boundary, so don't do this change. and Im killing the pen as a penalty ::::")
+            self.is_alive = False
             return True
         else:
             return False
@@ -88,7 +91,8 @@ class Pen:
 
 
     def update(self):
-        self.distance = random.randint(30, 40)
+        self.distance = random.randint(15, 20)
+
         print("distance to draw: ", self.distance, " in direction: ", self.action, " from pos: ", self.pos)
 
         if not self.is_going_to_go_out_of_boundary(self.pos, self.distance):
@@ -121,7 +125,6 @@ class Pen:
                 
                 self.distance = 0
                 print("--------------------- hit the boundary or drew outside the boundary. So change the position to previous position. ---------------------")
-                # self.is_alive = False
                 return
             
             print("now position:                          self.x ", self.pos[0], ", self.y ", self.pos[1])
@@ -134,7 +137,7 @@ class PyGame2D:
         self.clock = pygame.time.Clock()
         self.font = pygame.font.SysFont("Arial", 30)
 
-        self.pen = Pen('pen.png', 'map_cobra_1.png', [120,590])
+        self.pen = Pen('pen.png', 'map_cobra_3.png', [120,590])
         print("=====>>>>> pen pos: ", self.pen.pos)
 
         self.game_speed = 30
@@ -175,7 +178,7 @@ class PyGame2D:
                 print("::: y_distance_from_start: ", self.pen.y_distance_from_start, "<------------------", 
                       "\n::: x_distance_to_goal: ", self.pen.x_distance_to_goal)
 
-                reward += self.pen.y_distance_from_start
+                reward += 2 * self.pen.y_distance_from_start
                 reward += 10000 / self.pen.x_distance_to_goal  # to make when decreesing x_distance_to_goal, the reward will increase
 
                 print(":::: reward from pen y distance form start: ", self.pen.y_distance_from_start)

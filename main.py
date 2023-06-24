@@ -6,27 +6,58 @@ import random
 import gymnasium as gym
 import gym_game
 
+import matplotlib.pyplot as plt
+
+q_states = []
+
+in_out_vals = []
+y_distance_from_start_vals = []
+x_distance_to_goal_vals = []
 
 screen_width = 1500
 screen_height = 800
 pen_start_point = [120, 590]
 goal_point = [1260, 600]
 
-def find_closest_key(key):   
+episode_timesteps = []
+episode_rewards = []
+
+def find_closest_key(key): 
+    index_0 = key[0]  
     index_1 = key[1]
     index_2 = key[2]
 
-    # get the multiple of 10 that is lower than index_1
-    index_1 = index_1 - (index_1 % 5)
+    # print(" >>>>> in find closest key <<<<<")
+    # print("in_out_vals: ", in_out_vals)
+    # print("y_distance_from_start_vals: ", y_distance_from_start_vals)
+    # print("x_distance_to_goal_vals: ", x_distance_to_goal_vals)
+    # print("q_states: ", q_states)
 
-    # get the multiple of 10 that is lower than index_2
-    index_2 = index_2 - (index_2 % 5)
+    # get the closest number available in q states for observation 1.
+    if index_0 in in_out_vals:
+        index_0 = index_0
+    else:
+        index_0 = min(in_out_vals, key=lambda x: abs(x - index_0))
 
-    return tuple([key[0], index_1, index_2])
+    # get the closest number available in q states for observation 2 (y distance travelled from start).
+    if index_1 in y_distance_from_start_vals:
+        index_1 = index_1
+    else:
+        index_1 = min(y_distance_from_start_vals, key=lambda x: abs(x - index_1))
+
+    # get the closest number available in q states for observation 3 (x distance to goal).
+    if index_2 in x_distance_to_goal_vals:
+        index_2 = index_2
+    else:
+        index_2 = min(x_distance_to_goal_vals, key=lambda x: abs(x - index_2))
+
+
+    return tuple([index_0, index_1, index_2])
 
 
 def simulate():
     global epsilon, epsilon_decay
+
     for episode in range(MAX_EPISODES):
 
         # Init environment
@@ -77,6 +108,8 @@ def simulate():
             if done or t >= MAX_TRY - 1:
                 print("Episode %d finished after %i time steps with total reward = %f." % (episode, t, total_reward))
                 print("-- \n\n")
+                episode_rewards.append(total_reward)
+                episode_timesteps.append(t)
                 break
 
         # exploring rate decay
@@ -85,7 +118,6 @@ def simulate():
 
 
 def generate_q_states(start_index, end_index, window_size):
-    q_states = []    
     q_states.append(start_index) # append start index
 
     a = start_index[0]
@@ -103,12 +135,24 @@ def generate_q_states(start_index, end_index, window_size):
             b = b + window_size
         a = a + 1
     
-    return q_states
+    in_out_vals = [subarray[0] for subarray in q_states]
+    y_distance_from_start_vals = [subarray[1] for subarray in q_states]
+    x_distance_to_goal_vals = [subarray[2] for subarray in q_states]
+
+    in_out_vals = sorted(set(in_out_vals))
+    y_distance_from_start_vals = sorted(set(y_distance_from_start_vals))
+    x_distance_to_goal_vals = sorted(set(x_distance_to_goal_vals))
+
+    # print("in_out_vals: ", in_out_vals)
+    # print("y_distance_from_start_vals: ", y_distance_from_start_vals)
+    # print("x_distance_to_goal_vals: ", x_distance_to_goal_vals)
+
+    return q_states, in_out_vals, y_distance_from_start_vals, x_distance_to_goal_vals
 
 
 if __name__ == "__main__":
     env = gym.make("NayaaStroke-v0")
-    MAX_EPISODES = 10 #9999
+    MAX_EPISODES = 200 #9999
     MAX_TRY = 1000
     epsilon = 1
     epsilon_decay = 0.999
@@ -125,8 +169,8 @@ if __name__ == "__main__":
     # Create the Q-table
     q_table = {}
 
-    q_states = generate_q_states([0, 590 - 800, (goal_point[0] - screen_width)], [1, pen_start_point[1], goal_point[0] ], 5)
-
+    q_states, in_out_vals, y_distance_from_start_vals, x_distance_to_goal_vals = generate_q_states([0, -210, -240], [1, 590, 1260], 40)
+    print("q_states: ", q_states[0:3])
 
 
     # Initialize the Q-values for each state-action pair to 0
@@ -139,3 +183,20 @@ if __name__ == "__main__":
 
     # print(q_table)
     simulate()
+    
+    print(list(q_table.items())[:4])
+    print("q table size: ", len(q_table))
+    
+    # plot the reward and episode length
+    plt.figure(figsize=(12,8))
+    plt.subplot(2, 1, 1)
+    plt.plot(episode_rewards)
+    plt.xlabel("Episode")
+    plt.ylabel("Episode Reward")
+    plt.subplot(2, 1, 2)
+    plt.plot(episode_timesteps)
+    plt.xlabel("Episode")
+    plt.ylabel("Episode Length")
+    plt.show()
+
+

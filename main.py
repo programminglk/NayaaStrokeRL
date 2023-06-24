@@ -16,8 +16,12 @@ x_distance_to_goal_vals = []
 
 screen_width = 1500
 screen_height = 800
+
 pen_start_point = [120, 590]
+pen_start_point_env_4 = [100, 700]
+
 goal_point = [1260, 600]
+goal_point_env_4 = [1350, 180]
 
 episode_timesteps = []
 episode_rewards = []
@@ -74,7 +78,9 @@ def simulate():
             else:
                 action = np.argmax(q_table[find_closest_key(state)])
 
-            # action = 2
+            # action = np.argmax(q_table[find_closest_key(state)])
+            
+            # action = 1
 
             print("\nrun ", t,  " action: ", action)
 
@@ -99,6 +105,8 @@ def simulate():
             print("best q: ", best_q)
 
             q_table[find_closest_key(state)][action] = (1 - learning_rate) * q_value + learning_rate * (reward + gamma * best_q)
+
+            print("q table state that updated: ", find_closest_key(state), " what in q_table:", q_table[find_closest_key(state)])
 
             # Set up for the next iteration
             state = next_state
@@ -157,10 +165,10 @@ def generate_q_states(start_index, end_index, window_size):
 
 if __name__ == "__main__":
     env = gym.make("NayaaStroke-v0")
-    MAX_EPISODES = 1000 #9999
+    MAX_EPISODES = 100 #9999
     MAX_TRY = 1000
     epsilon = 1
-    epsilon_decay = 0.999
+    epsilon_decay = 0.999 #0.999
     learning_rate = 0.1
     gamma = 0.6
 
@@ -174,7 +182,8 @@ if __name__ == "__main__":
     # Create the Q-table
     q_table = {}
 
-    q_states, in_out_vals, y_distance_from_start_vals, x_distance_to_goal_vals = generate_q_states([0, -210, -240], [1, 590, 1260], 30)
+    # q_states, in_out_vals, y_distance_from_start_vals, x_distance_to_goal_vals = generate_q_states([0, -210, -240], [1, 590, 1260], 30) 
+    q_states, in_out_vals, y_distance_from_start_vals, x_distance_to_goal_vals = generate_q_states([0, -100, -150], [1, 700, 1350], 60) # for env 4
     print("q_states: ", q_states[0:3])
 
 
@@ -184,7 +193,7 @@ if __name__ == "__main__":
         state = tuple(state)
         q_table[state] = {}
         for action in range(env.action_space.n):
-            q_table[state][action] = 0.01 #random.uniform(0, 1)
+            q_table[state][action] = random.uniform(0, 1)
 
     # print(q_table)
     simulate()

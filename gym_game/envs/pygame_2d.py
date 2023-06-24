@@ -45,40 +45,53 @@ class Pen:
         x = self.pos[0] 
         y = self.pos[1] 
 
+        # when coming to this function, the action is already done. so we have to draw back that much of distance to the opposite direction.
         if self.action == 0:
-            pygame.draw.line(self.map, (255, 0, 0), (x, y), (x - self.distance, y), 2)
-        elif self.action == 1:
             pygame.draw.line(self.map, (255, 0, 0), (x, y), (x + self.distance, y), 2)
+        elif self.action == 1:
+            pygame.draw.line(self.map, (255, 0, 0), (x, y), (x - self.distance, y), 2)
         elif self.action == 2:
-            pygame.draw.line(self.map, (255, 0, 0), (x, y), (x, y - self.distance), 2)
-        elif self.action == 3:
             pygame.draw.line(self.map, (255, 0, 0), (x, y), (x, y + self.distance), 2)
+        elif self.action == 3:
+            pygame.draw.line(self.map, (255, 0, 0), (x, y), (x, y - self.distance), 2)
 
 
     def is_hitting_snake_boundary(self):
 
-        if(self.map.get_at((self.pos[0], self.pos[1])) != (255, 255, 255, 255)):
-            if(self.map.get_at((self.pos[0], self.pos[1])) != (255, 0, 0, 255)): # if pos color is not red
-                print("hit the boundary")
-                self.out_or_hitting_snake_boundary = True
-                return True
-            else:
-                # check sourounding pixels to see if it is white. if not white, then it is out of snake boundary
-                if(self.map.get_at((self.pos[0] + 1, self.pos[1])) == (255, 255, 255, 255) 
-                   or self.map.get_at((self.pos[0] - 1, self.pos[1])) == (255, 255, 255, 255) 
-                   or self.map.get_at((self.pos[0], self.pos[1] + 1)) == (255, 255, 255, 255) 
-                   or self.map.get_at((self.pos[0], self.pos[1] - 1)) == (255, 255, 255, 255)):
-                    print("was on red strokes, but still within the snake")
-                    self.out_or_hitting_snake_boundary = False
-                    return False
-                else:
-                    print("was on red strokes, but seems outside of snake.. so Im killing the pen as a penalty")
-                    self.out_or_hitting_snake_boundary = True
-                    self.is_alive = False
-                    return True
-        else:
+        print("this position color: ")
+        print(self.map.get_at((self.pos[0] + 1, self.pos[1])))
+
+        if((self.map.get_at((self.pos[0], self.pos[1])) == (255, 255, 255, 255)) or 
+           (self.map.get_at((self.pos[0], self.pos[1])) == (0, 0, 0, 255))) :
+            
             self.out_or_hitting_snake_boundary = False
+            self.is_alive = True
             return False
+
+        elif (self.map.get_at((self.pos[0], self.pos[1])) == (255, 0, 0, 255)):
+            # check sourounding pixels to see if it is white. if not white, then it is out of snake boundary
+            if(self.map.get_at((self.pos[0] + 1, self.pos[1])) == (255, 255, 255, 255) 
+                or self.map.get_at((self.pos[0] - 1, self.pos[1])) == (255, 255, 255, 255) 
+                or self.map.get_at((self.pos[0], self.pos[1] + 1)) == (255, 255, 255, 255) 
+                or self.map.get_at((self.pos[0], self.pos[1] - 1)) == (255, 255, 255, 255)
+                or self.map.get_at((self.pos[0] + 2, self.pos[1])) == (255, 255, 255, 255) 
+                or self.map.get_at((self.pos[0] - 2, self.pos[1])) == (255, 255, 255, 255) 
+                or self.map.get_at((self.pos[0], self.pos[1] + 2)) == (255, 255, 255, 255) 
+                or self.map.get_at((self.pos[0], self.pos[1] - 2)) == (255, 255, 255, 255)):
+
+                print("was on red strokes, but still within the snake")
+                self.out_or_hitting_snake_boundary = False
+                return False
+            else:
+                print("was on red strokes, but seems outside of snake.. so Im killing the pen as a penalty")
+                self.out_or_hitting_snake_boundary = True
+                self.is_alive = False
+                return True
+        else:
+            print("outside of snake boundary for sure... killing the pen as a penalty")
+            self.out_or_hitting_snake_boundary = True
+            self.is_alive = False
+            return True
         
     def is_going_to_go_out_of_boundary(self, p, distance):
         if(p[0] - distance < 0 or p[0] + distance > 1500 or p[1] - distance < 0 or p[1] + distance > 800):
@@ -92,8 +105,9 @@ class Pen:
 
     def update(self):
         # random normal distribution
+        # self.distance = 50
         # self.distance = int(np.random.normal(loc=2, scale = 1, size=1))
-        self.distance = int(np.random.normal(loc=40, scale = 10, size=1))
+        self.distance = int(np.random.normal(loc=10, scale = 4, size=1))
 
         print("distance to draw: ", self.distance, " in direction: ", self.action, " from pos: ", self.pos)
 
@@ -107,6 +121,8 @@ class Pen:
                 self.pos[1] -= self.distance
             if self.action == 3: # move down
                 self.pos[1] += self.distance
+
+            print("now position:                          self.x ", self.pos[0], ", self.y ", self.pos[1])
 
             # updating observation data after action done.
             self.y_distance_from_start = int(pen_start_point[1] - self.pos[1])
@@ -127,9 +143,9 @@ class Pen:
                 
                 self.distance = 0
                 print("--------------------- hit the boundary or drew outside the boundary. So change the position to previous position. ---------------------")
+                print("changed back, now position:                          self.x ", self.pos[0], ", self.y ", self.pos[1])
                 return
             
-            print("now position:                          self.x ", self.pos[0], ", self.y ", self.pos[1])
             print("=============== changed position color: ", self.map.get_at((self.pos[0], self.pos[1])))
 
 class PyGame2D:
@@ -137,7 +153,7 @@ class PyGame2D:
         pygame.init()
         self.screen = pygame.display.set_mode((screen_width, screen_height))
         self.clock = pygame.time.Clock()
-        self.font = pygame.font.SysFont("Arial", 30)
+        self.font = pygame.font.SysFont("Arial", 60)
 
         self.pen = Pen('pen.png', 'map_cobra_3.png', [120,590])
         print("=====>>>>> pen pos: ", self.pen.pos)
@@ -169,7 +185,11 @@ class PyGame2D:
         reward = 0
 
         if not self.pen.is_alive:
-            reward = -100 + self.pen.y_distance_from_start
+            if self.pen.y_distance_from_start == 0:
+                reward = -200
+            else:
+                reward = -100 - int(1000/self.pen.y_distance_from_start)
+            print(":::: penalty because pen is dead, reward: ", reward, "::::")
         
         if self.pen.is_alive:
             if self.pen.distance == 0:
@@ -191,6 +211,7 @@ class PyGame2D:
                 
                 if self.pen.x_distance_to_goal < 5:
                     reward += 100
+        
         return reward
 
     def is_done(self):

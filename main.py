@@ -62,7 +62,7 @@ def simulate():
 
         # Init environment
         state, info = env.reset()
-        stata = tuple(state)
+        state = tuple(state)
         total_reward = 0
 
         # AI tries up to MAX_TRY times
@@ -74,15 +74,17 @@ def simulate():
             else:
                 action = np.argmax(q_table[find_closest_key(state)])
 
-            print("action: ", action)
+            # action = 2
+
+            print("\nrun ", t,  " action: ", action)
 
             # Do action and get result
             next_state, reward, done, truncated, info = env.step(action)
             next_state = tuple(next_state)
             total_reward += reward
 
-            print("state: ", state)
-            print("next state: ", next_state)
+            print("run ", t, " prev state: ", state)
+            print("run ", t, " state after doing action: ", next_state)
 
             # Get correspond q value from state, action pair
             q_value = q_table[find_closest_key(tuple(state))][action]
@@ -102,7 +104,10 @@ def simulate():
             state = next_state
 
             # Draw games
+            print("run ", t, " total redering $$$$$$")
             env.render()
+            print("run ", t, " total redered $$$$$$")
+
 
             # When episode is done, print reward
             if done or t >= MAX_TRY - 1:
@@ -169,7 +174,7 @@ if __name__ == "__main__":
     # Create the Q-table
     q_table = {}
 
-    q_states, in_out_vals, y_distance_from_start_vals, x_distance_to_goal_vals = generate_q_states([0, -210, -240], [1, 590, 1260], 40)
+    q_states, in_out_vals, y_distance_from_start_vals, x_distance_to_goal_vals = generate_q_states([0, -210, -240], [1, 590, 1260], 30)
     print("q_states: ", q_states[0:3])
 
 

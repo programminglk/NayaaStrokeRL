@@ -152,7 +152,7 @@ def generate_q_states(start_index, end_index, window_size):
 
 if __name__ == "__main__":
     env = gym.make("NayaaStroke-v0")
-    MAX_EPISODES = 200 #9999
+    MAX_EPISODES = 1000 #9999
     MAX_TRY = 1000
     epsilon = 1
     epsilon_decay = 0.999

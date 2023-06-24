@@ -91,7 +91,9 @@ class Pen:
 
 
     def update(self):
-        self.distance = random.randint(15, 20)
+        # random normal distribution
+        # self.distance = int(np.random.normal(loc=2, scale = 1, size=1))
+        self.distance = int(np.random.normal(loc=40, scale = 10, size=1))
 
         print("distance to draw: ", self.distance, " in direction: ", self.action, " from pos: ", self.pos)
 

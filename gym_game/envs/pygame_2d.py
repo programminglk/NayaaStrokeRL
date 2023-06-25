@@ -110,7 +110,7 @@ class Pen:
         # random normal distribution
         # self.distance = 50
         # self.distance = int(np.random.normal(loc=2, scale = 1, size=1))
-        self.distance = int(np.random.normal(loc=20, scale = 5, size=1))
+        self.distance = int(np.random.normal(loc=30, scale = 5, size=1))
 
         print("distance to draw: ", self.distance, " in direction: ", self.action, " from pos: ", self.pos)
 
@@ -189,10 +189,7 @@ class PyGame2D:
         reward = 0
 
         if not self.pen.is_alive:
-            if self.pen.y_distance_from_start == 0:
-                reward = -200
-            else:
-                reward = -100 - int(1000/self.pen.y_distance_from_start)
+            reward = -200
             print(":::: penalty because pen is dead, reward: ", reward, "::::")
         
         if self.pen.is_alive:
@@ -204,17 +201,17 @@ class PyGame2D:
                 print("::: y_distance_from_start: ", self.pen.y_distance_from_start, "<------------------", 
                       "\n::: x_distance_to_goal: ", self.pen.x_distance_to_goal)
 
-                reward += 2 * self.pen.y_distance_from_start
-                reward += 20000 / self.pen.x_distance_to_goal  # to make when decreesing x_distance_to_goal, the reward will increase
+                reward += self.pen.y_distance_from_start
+                reward += 2500 / self.pen.x_distance_to_goal  # when decreesing x_distance_to_goal, the reward should increase
 
                 print(":::: reward from pen y distance form start: ", self.pen.y_distance_from_start, " updated reward: ", reward, "::::")
                 print(":::: reward from pen x distance to goal: ", 25000 / self.pen.x_distance_to_goal, " updated reward: ", reward, "::::")
 
-                if self.pen.x_distance_to_goal < 20:
+                if self.pen.x_distance_to_goal < 400:
                     reward += 100
                 
-                if self.pen.x_distance_to_goal < 5:
-                    reward += 100
+                if self.pen.x_distance_to_goal < 100:
+                    reward += 200
         
         print(":::: finally reward for this action is: reward: ", reward, "::::")
         return reward

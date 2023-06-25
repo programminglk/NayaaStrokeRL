@@ -80,7 +80,7 @@ def simulate():
 
             # action = np.argmax(q_table[find_closest_key(state)])
             
-            # action = 1
+            # action = 0
 
             print("\nrun ", t,  " action: ", action)
 
@@ -165,8 +165,8 @@ def generate_q_states(start_index, end_index, window_size):
 
 if __name__ == "__main__":
     env = gym.make("NayaaStroke-v0")
-    MAX_EPISODES = 100 #9999
-    MAX_TRY = 1000
+    MAX_EPISODES = 1000 #9999
+    MAX_TRY = 100 #9999
     epsilon = 1
     epsilon_decay = 0.999 #0.999
     learning_rate = 0.1
